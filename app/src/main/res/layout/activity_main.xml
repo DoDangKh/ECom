@@ -1,84 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
-    <LinearLayout
-    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/orange"
-    tools:context=".MainActivity">
+    android:orientation="vertical">
+       <androidx.drawerlayout.widget.DrawerLayout
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"
+           android:fitsSystemWindows="true"
+           android:id="@+id/drawer">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <androidx.appcompat.widget.Toolbar
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:background="@color/blue"
+                    android:id="@+id/toolbar"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <ListView
+                        android:id="@+id/list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="11"/>
+                </LinearLayout>
+            </LinearLayout>
+           <com.google.android.material.navigation.NavigationView
+               android:layout_width="wrap_content"
+               android:layout_height="match_parent"
+               android:layout_gravity="start"
+               android:fitsSystemWindows="true"
+               android:id="@+id/navigationview">
+               <ListView
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:id="@+id/navigation_listv"
+                   android:layout_marginTop="30dp"/>
+           </com.google.android.material.navigation.NavigationView>
+       </androidx.drawerlayout.widget.DrawerLayout>
 
-        <androidx.viewpager.widget.ViewPager
-            android:id="@+id/viewpager"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"/>
 
-        <me.relex.circleindicator.CircleIndicator
-            android:id="@+id/circle_indicator"
-            android:layout_width="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_height="30dp"/>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_marginLeft="20dp">
-            <TextView
-                android:id="@+id/Name"
-                android:layout_width="wrap_content"
-                android:layout_height="50dp"
-                android:layout_marginTop="16dp"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:text="test">
-            </TextView>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Product Details"
-                android:textColor="@color/white"
-                android:textSize="14sp"
-                android:textStyle="bold"/>
-            <TextView
-                android:id="@+id/decription"
-                android:layout_width="wrap_content"
-                android:layout_height="300dp"
-                android:layout_marginTop="16dp"
-                android:textSize="12sp"
-                android:textColor="@color/white"
-                android:text="test">
-            </TextView>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-            <android.widget.Button
-                android:id="@+id/gotocartbttn"
-                android:layout_width="150dp"
-                android:layout_height="50dp"
-                android:layout_marginLeft="30dp"
-                android:background="@drawable/gotocart"
-                android:textColor="@color/white"
-                android:text="Go to cart"></android.widget.Button>
-            <android.widget.Button
-                android:id="@+id/buynowbttn"
-                android:layout_height="50dp"
-                android:layout_width="150dp"
-                android:layout_marginLeft="55dp"
-                android:background="@drawable/buynow"
-                android:textColor="@color/white"
-                android:text="Buy Now">
-
-            </android.widget.Button>
-        </LinearLayout>
 
 </LinearLayout>
-</ScrollView>
