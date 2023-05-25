@@ -13,10 +13,20 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.ecom.API.ListProductJSON;
+import com.example.ecom.API.ProductJSON;
+import com.example.ecom.API.cartidJSON;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import me.relex.circleindicator.CircleIndicator;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ProductDetail extends AppCompatActivity {
 
@@ -28,8 +38,13 @@ public class ProductDetail extends AppCompatActivity {
     private TextView price;
     private DBhelper db=new DBhelper(this);
     private Button btbuynow;
-
+    private  int productid=0;
     private Button btGoToCart;
+    private Retrofit retrofit=new Retrofit.Builder()
+            .baseUrl("http://10.0.2.2:5000")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
+    ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,101 +58,100 @@ public class ProductDetail extends AppCompatActivity {
         btGoToCart=findViewById(R.id.gotocartbttn);
         String vl=getIntent().getStringExtra("vl");
         Log.d("CREATION",vl);
-        Cursor data=db.GetData("Select * From Products where id ="+vl);
-        Product p=new Product();
-        while(data.moveToNext()){
-            p.setId(data.getInt(0));
-            p.setName(data.getString(1));
-            p.setDescription(data.getString(2));
-            p.setPrice(data.getInt(3));
-        }
-        Name=findViewById(R.id.Name);
-        Log.d("Creation",Integer.toString(p.getPrice()));
-        price=findViewById(R.id.Price);
-        price.setText(Integer.toString(p.getPrice()));
-        Description=findViewById(R.id.decription);
-        Name.setText(p.getName());
-        Description.setText(p.getDescription());
-        viewPager= findViewById(R.id.viewpager);
-        circleIndicator= findViewById(R.id.circle_indicator);
+//        Cursor data=db.GetData("Select * From Products where id ="+vl);
+        apiService=retrofit.create(ApiService.class);
+        Call<ListProductJSON> call=apiService.executeGetProduct(Integer.valueOf(vl));
 
-        photoadapter= new Photoadapter(this, getListPhoto(p));
-        viewPager.setAdapter(photoadapter);
+        call.enqueue(new Callback<ListProductJSON>() {
+            @Override
+            public void onResponse(Call<ListProductJSON> call, Response<ListProductJSON> response) {
+                ListProductJSON rs=response.body();
+                anhxa();
+                productid=rs.getListProduct().get(0).getId();
+                Log.d("CREATIONPRODUCT",rs.getListProduct().get(0).getName());
+                price.setText(Integer.toString(rs.getListProduct().get(0).getPrice())+"USD");
+                Name.setText(rs.getListProduct().get(0).getName());
+                Description.setText(rs.getListProduct().get(0).getDescription());
+                photoadapter= new Photoadapter(ProductDetail.this, getListPhoto(rs.getListProduct().get(0)));
+                viewPager.setAdapter(photoadapter);
 
-        circleIndicator.setViewPager(viewPager);
-        photoadapter.registerDataSetObserver(circleIndicator.getDataSetObserver());
+                circleIndicator.setViewPager(viewPager);
+                photoadapter.registerDataSetObserver(circleIndicator.getDataSetObserver());
+            }
+
+            @Override
+            public void onFailure(Call<ListProductJSON> call, Throwable t) {
+                Log.d("CREATIONPRODUCT",t.getMessage());
+            }
+        });
+
+//        Product p=new Product();
+//        while(data.moveToNext()){
+//            p.setId(data.getInt(0));
+//            p.setName(data.getString(1));
+//            p.setDescription(data.getString(2));
+//            p.setPrice(data.getInt(3));
+//        }
+
+//        Log.d("Creation",Integer.toString(p.getPrice()));
+
+
+
+
         btbuynow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int id=0;
-                Cursor data= db.GetData("Select * From Carts where status=1 and idCustomer=1");
+                HashMap<String,String> map=new HashMap<>();
+                map.put("id",String.valueOf(1));
+                map.put("productid",String.valueOf(productid));
+                Call<cartidJSON> call=apiService.executeaddtocart(map);
+                call.enqueue(new Callback<cartidJSON>() {
+                    @Override
+                    public void onResponse(Call<cartidJSON> call, Response<cartidJSON> response) {
+                        cartidJSON rs=response.body();
+                        Intent intent=new Intent(ProductDetail.this,cart.class);
+                        intent.putExtra("id",rs.getId());
+                        startActivity(intent);
+                    }
 
-                if(data.getCount()==0){
-                    db.QueryData("Insert into Carts Values(null,1,1)");
-                    Cursor data2= db.GetData("Select * From Carts where status=1 and idCustomer=1");
-                    while(data2.moveToNext()){
-                        id=data2.getInt(0);
-                    }
-                    db.QueryData("Insert into  cartdetail Values(null,"+id+","+p.getId()+",1)");
-                }
-                else {
-                    while (data.moveToNext()) {
-                        id = data.getInt(0);
-                    }
-                    Cursor data2 = db.GetData("Select * From cartdetail where idcart=" + id + " and idproduct=" + p.getId());
-                    if (data2.getCount() == 0) {
-                        db.QueryData("Insert into cartdetail Values (null," + id + "," + p.getId() + ",1)");
+                    @Override
+                    public void onFailure(Call<cartidJSON> call, Throwable t) {
 
                     }
-                    else{
-                        data2=db.GetData("Select * From Cartdetail where idcart="+id+" and idproduct="+p.getId());
-                        int amount=data2.getInt(3);
-                        amount+=1;
-                        db.QueryData("update cartdetail set amount="+amount+"where idcart="+id+" and idproduct="+p.getId());
-                    }
-                }
+                });
 
-
-                Intent intent=new Intent(ProductDetail.this,cart.class);
-                intent.putExtra("id",id);
-                startActivity(intent);
             }
         });
         btGoToCart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int id=0;
-                Cursor data= db.GetData("Select * From Carts where status=1 and idCustomer=1");
+                HashMap<String,String> map=new HashMap<>();
+                map.put("id",String.valueOf(1));
+                map.put("productid",String.valueOf(productid));
+                Call<cartidJSON> call=apiService.executeaddtocart(map);
+                call.enqueue(new Callback<cartidJSON>() {
+                    @Override
+                    public void onResponse(Call<cartidJSON> call, Response<cartidJSON> response) {
+                        cartidJSON rs=response.body();
+                    }
 
-                if(data.getCount()==0){
-                    db.QueryData("Insert into Carts Values(null,1,1)");
-                    Cursor data2= db.GetData("Select * From Carts where status=1 and idCustomer=1");
-                    while(data2.moveToNext()){
-                        id=data2.getInt(0);
-                    }
-                    db.QueryData("Insert into  cartdetail Values(null,"+id+","+p.getId()+",1)");
-                }
-                else {
-                    while (data.moveToNext()) {
-                        id = data.getInt(0);
-                    }
-                    Cursor data2 = db.GetData("Select * From cartdetail where idcart=" + id + " and idproduct=" + p.getId());
-                    if (data2.getCount() == 0) {
-                        db.QueryData("Insert into cartdetail Values (null," + id + "," + p.getId() + ",1)");
+                    @Override
+                    public void onFailure(Call<cartidJSON> call, Throwable t) {
 
                     }
-                    else{
-                        data2=db.GetData("Select * From Cartdetail where idcart="+id+" and idproduct="+p.getId());
-                        int amount=data2.getInt(3);
-                        amount+=1;
-                        db.QueryData("update cartdetail set amount="+amount+"where idcart="+id+" and idproduct="+p.getId());
-                    }
-                }
+                });
                 Toast.makeText(ProductDetail.this,"add success",Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+    private void anhxa(){
+        Name=findViewById(R.id.Name);
+        price=findViewById(R.id.Price);
+        Description=findViewById(R.id.decription);
+        viewPager= findViewById(R.id.viewpager);
+        circleIndicator= findViewById(R.id.circle_indicator);
+    }
     private List<Photo> getListPhoto(Product product){
         String imgname="img";
         imgname+=Integer.toString(product.getId());

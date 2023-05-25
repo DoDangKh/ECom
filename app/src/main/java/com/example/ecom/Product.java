@@ -1,8 +1,11 @@
 package com.example.ecom;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.jar.Attributes;
 
 public class Product {
+    @SerializedName("id")
     private  int id;
     private int Resourceid;
 
@@ -33,9 +36,34 @@ public class Product {
         this.id = id;
     }
 
+    @SerializedName("Name")
     private String Name;
+    @SerializedName("Description")
     private String Description;
+    @SerializedName("price")
     private int Price;
+
+    @SerializedName("amount")
+    private int amount;
+
+    @SerializedName("soluong")
+    private  int soluong;
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
+    }
+
+    public int getSoluong() {
+        return soluong;
+    }
+
+    public void setSoluong(int soluong) {
+        this.soluong = soluong;
+    }
 
     public String getName() {
         return Name;
